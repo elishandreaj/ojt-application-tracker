@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "62446329630",
+    "project_id": "ojt-tracker-fd0a2",
+    "storage_bucket": "ojt-tracker-fd0a2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62446329630:android:5ac57e29ee257463eef30f",
+        "android_client_info": {
+          "package_name": "com.example.ojt_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsQuXriLS002CwUqWtk3Wun8uQXsx7aeg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

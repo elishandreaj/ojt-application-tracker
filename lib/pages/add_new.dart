@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:intl/intl.dart';
+import '../services/db_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   runApp(MaterialApp(home: AddApplicationScreen()));
 }
 
@@ -30,25 +25,36 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   List<TextEditingController> requirementsControllers = [];
 
   void addApplication() async {
-    if (companyController.text.isNotEmpty && roleController.text.isNotEmpty) {
-      List<String> requirements = requirementsControllers
-          .where((controller) => controller.text.isNotEmpty)
-          .map((controller) => controller.text)
-          .toList();
+    if (companyController.text.isEmpty || roleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Company and Role are required!")),
+      );
+      return;
+    }
 
-      await FirebaseFirestore.instance.collection('applications').add({
+    List<String> requirements = requirementsControllers
+        .where((controller) => controller.text.isNotEmpty)
+        .map((controller) => controller.text)
+        .toList();
+
+    try {
+      await DatabaseService().insertApplication({
         'company': companyController.text,
         'role': roleController.text,
         'location': locationController.text,
-        'set-up': setUp,
+        'setup': setUp,
         'status': applicationStatus,
         'date': dateController.text,
+        'requirements': requirements.join(','),
         'notes': notesController.text,
-        'requirements': requirements,
-        'createdAt': FieldValue.serverTimestamp(),
       });
+
       if (!mounted) return;
       Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to add application: $e")),
+      );
     }
   }
 
@@ -64,6 +70,14 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.all(10),
+            child: child,
+          ),
+        );
+      },
     );
 
     if (picked != null) {
@@ -84,19 +98,26 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
+                key: Key('company'),
                 controller: companyController,
                 decoration: InputDecoration(labelText: 'Company'),
+                autofillHints: [AutofillHints.organizationName],
               ),
               TextField(
+                key: Key('role'),
                 controller: roleController,
                 decoration: InputDecoration(labelText: 'Role'),
+                autofillHints: [AutofillHints.jobTitle],
               ),
               TextField(
+                key: Key('location'),
                 controller: locationController,
                 decoration: InputDecoration(labelText: 'Location'),
+                autofillHints: [AutofillHints.location],
               ),
               SizedBox(height: 10),
-              Text("Set-up"),
+
+              Text("Set-up", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Row(
                 children: [
                   Radio(
@@ -125,7 +146,25 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                   Text("Hybrid"),
                 ],
               ),
+
+              SizedBox(height: 10),
+              Text("Application Status", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              DropdownButton<String>(
+                value: applicationStatus,
+                isExpanded: true,
+                items: ["To Apply", "Applied", "Interview", "Accepted", "Rejected"]
+                    .map((status) => DropdownMenuItem(value: status, child: Text(status)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    applicationStatus = value!;
+                  });
+                },
+              ),
+
+              SizedBox(height: 10),
               TextField(
+                key: Key('date'),
                 controller: dateController,
                 readOnly: true,
                 onTap: pickDate,
@@ -133,7 +172,9 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                   labelText: 'Date',
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
+                autofillHints: [AutofillHints.birthday],
               ),
+
               SizedBox(height: 20),
               Text("Requirements", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Column(
@@ -141,6 +182,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: TextField(
+                      key: Key('requirement_$index'),
                       controller: requirementsControllers[index],
                       decoration: InputDecoration(
                         labelText: 'Requirement ${index + 1}',
@@ -161,11 +203,14 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 onPressed: addRequirementField,
                 child: Text("+ Add Requirement", style: TextStyle(color: Colors.blue)),
               ),
+
               SizedBox(height: 20),
               TextField(
+                key: Key('notes'),
                 controller: notesController,
                 decoration: InputDecoration(labelText: 'Notes'),
               ),
+
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(

@@ -20,9 +20,32 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   final TextEditingController locationController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
+  List<TextEditingController> requirementsControllers = [];
+
   String setUp = 'On-site';
   String applicationStatus = 'To Apply';
-  List<TextEditingController> requirementsControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Start with one empty requirement field
+    addRequirementField();
+  }
+
+  @override
+  void dispose() {
+    companyController.dispose();
+    roleController.dispose();
+    locationController.dispose();
+    dateController.dispose();
+    notesController.dispose();
+
+    for (var controller in requirementsControllers) {
+      controller.dispose();
+    }
+
+    super.dispose();
+  }
 
   void addApplication() async {
     if (companyController.text.isEmpty || roleController.text.isEmpty) {
@@ -61,6 +84,13 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   void addRequirementField() {
     setState(() {
       requirementsControllers.add(TextEditingController());
+    });
+  }
+
+  void removeRequirementField(int index) {
+    setState(() {
+      requirementsControllers[index].dispose(); // properly dispose
+      requirementsControllers.removeAt(index);
     });
   }
 
@@ -120,29 +150,17 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
               Text("Set-up", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Row(
                 children: [
-                  Radio(
-                    value: 'On-site',
-                    groupValue: setUp,
-                    onChanged: (value) {
-                      setState(() => setUp = value as String);
-                    },
-                  ),
+                  Radio(value: 'On-site', groupValue: setUp, onChanged: (value) {
+                    setState(() => setUp = value as String);
+                  }),
                   Text("On-site"),
-                  Radio(
-                    value: 'Online',
-                    groupValue: setUp,
-                    onChanged: (value) {
-                      setState(() => setUp = value as String);
-                    },
-                  ),
+                  Radio(value: 'Online', groupValue: setUp, onChanged: (value) {
+                    setState(() => setUp = value as String);
+                  }),
                   Text("Online"),
-                  Radio(
-                    value: 'Hybrid',
-                    groupValue: setUp,
-                    onChanged: (value) {
-                      setState(() => setUp = value as String);
-                    },
-                  ),
+                  Radio(value: 'Hybrid', groupValue: setUp, onChanged: (value) {
+                    setState(() => setUp = value as String);
+                  }),
                   Text("Hybrid"),
                 ],
               ),
@@ -188,11 +206,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                         labelText: 'Requirement ${index + 1}',
                         suffixIcon: IconButton(
                           icon: Icon(Icons.remove_circle, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              requirementsControllers.removeAt(index);
-                            });
-                          },
+                          onPressed: () => removeRequirementField(index),
                         ),
                       ),
                     ),

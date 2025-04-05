@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'add_new.dart';
 import '../services/db_service.dart';
@@ -22,7 +23,7 @@ class Dashboard extends StatefulWidget {
 
 class DashboardState extends State<Dashboard> {
   final DatabaseService _dbService = DatabaseService();
-  
+
   final Map<String, Color> tagColors = {
     "To Apply": Colors.blue,
     "Applied": Colors.purple,
@@ -32,13 +33,12 @@ class DashboardState extends State<Dashboard> {
   };
 
   String _sortOption = "Date Added (Ascending)";
-
   Map<String, int> statusCounts = {};
 
   @override
   void initState() {
     super.initState();
-    _loadStatusCounts(); 
+    _loadStatusCounts();
   }
 
   Future<void> _loadStatusCounts() async {
@@ -51,7 +51,7 @@ class DashboardState extends State<Dashboard> {
     }
 
     setState(() {
-      statusCounts = counts; 
+      statusCounts = counts;
     });
   }
 
@@ -166,7 +166,9 @@ class DashboardState extends State<Dashboard> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => AddApplicationScreen()),
-                      );
+                      ).then((_) {
+                        _loadStatusCounts(); 
+                      });
                     },
                     child: const Text("+ Add New"),
                   ),
@@ -174,7 +176,7 @@ class DashboardState extends State<Dashboard> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: StreamBuilder<List<Map<String, dynamic>>>(  // Ensure StreamBuilder is inside Expanded
+                child: StreamBuilder<List<Map<String, dynamic>>>(
                   stream: fetchApplications(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -184,7 +186,21 @@ class DashboardState extends State<Dashboard> {
                       return const Center(child: Text("No applications yet."));
                     }
 
-                    final applications = _sortApplications(snapshot.data!);
+                    final applications = _sortApplications(snapshot.data!.toList());
+                    final counts = <String, int>{};
+                    for (var app in applications) {
+                      final status = app['status'] as String;
+                      counts[status] = (counts[status] ?? 0) + 1;
+                    }
+                    if (!mapEquals(statusCounts, counts)) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            statusCounts = counts;
+                          });
+                        }
+                      });
+                    }
 
                     return ListView.builder(
                       itemCount: applications.length,

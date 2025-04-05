@@ -30,8 +30,9 @@ class DatabaseService {
             setup TEXT,
             status TEXT,
             date TEXT,
+            date_added TEXT,
             notes TEXT,
-            requirements TEXT  -- Store requirements as comma-separated values
+            requirements TEXT  
           )
         ''');
       },
@@ -46,5 +47,14 @@ class DatabaseService {
   Future<void> insertApplication(Map<String, dynamic> app) async {
     final db = await database;
     await db.insert('applications', app);
+  }
+  
+  Future<void> deleteApplication(int id) async {
+    final db = await database;
+    await db.delete(
+      'applications',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

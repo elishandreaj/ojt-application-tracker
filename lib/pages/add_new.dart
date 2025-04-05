@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/db_service.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(MaterialApp(home: AddApplicationScreen()));
-}
-
 class AddApplicationScreen extends StatefulWidget {
   const AddApplicationScreen({super.key});
 
@@ -63,12 +58,15 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
           'setup': setUp,
           'status': applicationStatus,
           'date': dateController.text,
-          'date_added': DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
+          'date_added': DateFormat('yyyy-MM-dd').format(DateTime.now()),
           'requirements': requirements.join(','),
           'notes': notesController.text,
         });
 
         if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Application added successfully!')),
+      );
         Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,11 +90,24 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   }
 
   Future<void> pickDate() async {
+    DateTime now = DateTime.now();
+    
+    DateTime firstDate;
+    DateTime lastDate;
+
+    if (applicationStatus == 'To Apply') {
+      firstDate = now;
+      lastDate = DateTime(2100);
+    } else {
+      firstDate = DateTime(2000);
+      lastDate = now;
+    }
+
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: now,
+      firstDate: firstDate,
+      lastDate: lastDate,
       builder: (context, child) {
         return Dialog(
           child: Container(

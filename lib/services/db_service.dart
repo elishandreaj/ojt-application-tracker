@@ -48,7 +48,7 @@ class DatabaseService {
     final db = await database;
     await db.insert('applications', app);
   }
-  
+
   Future<void> deleteApplication(int id) async {
     final db = await database;
     await db.delete(
@@ -57,4 +57,14 @@ class DatabaseService {
       whereArgs: [id],
     );
   }
+
+  Future<void> updateApplication(int id, Map<String, dynamic> updatedData) async {
+    final db = await database;
+      await db.update(
+        'applications',
+        updatedData,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
 }

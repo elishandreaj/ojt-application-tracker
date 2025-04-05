@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';   
 import 'add_new.dart';
+import 'update_app.dart';
 import '../services/db_service.dart';
 
 void main() async {
@@ -63,10 +64,10 @@ class DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> _sortApplications(List<Map<String, dynamic>> apps) {
     switch (_sortOption) {
       case "Date Added (Ascending)":
-        apps.sort((a, b) => a['date'].compareTo(b['date']));
+        apps.sort((a, b) => a['date_added'].compareTo(b['date_added']));
         break;
       case "Date Added (Descending)":
-        apps.sort((a, b) => b['date'].compareTo(a['date']));
+        apps.sort((a, b) => b['date_added'].compareTo(a['date_added']));
         break;
       case "Alphabetical":
         apps.sort((a, b) {
@@ -177,7 +178,9 @@ class DashboardState extends State<Dashboard> {
                             context,
                             MaterialPageRoute(builder: (context) => AddApplicationScreen()),
                           ).then((_) {
-                            _loadStatusCounts(); 
+                            if (mounted) {
+                              _loadStatusCounts(); 
+                            }
                           });
                         },
                         child: const Text("+ Add New"),
@@ -203,7 +206,7 @@ class DashboardState extends State<Dashboard> {
                         itemBuilder: (context, index) {
                           final app = applications[index];
                           return ApplicationCard(
-                            app, 
+                            application: app, 
                             onDelete: () => _deleteApplication(app),
                             onEdit: () => _editApplication(app),
                           );
@@ -221,56 +224,62 @@ class DashboardState extends State<Dashboard> {
   }
 
   void _deleteApplication(Map<String, dynamic> app) async {
-    bool? shouldDelete = await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Confirm Deletion"),
-          content: Text("Are you sure you want to delete this application?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text("Delete"),
-            ),
-          ],
-        );
-      },
-    );
-    if (shouldDelete == true) {
-      deletedApplications.add(app);
-      await _dbService.deleteApplication(app['id']);
-      _loadStatusCounts();
+  bool? shouldDelete = await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Confirm Deletion"),
+        content: Text("Are you sure you want to delete this application?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text("Delete"),
+          ),
+        ],
+      );
+    },
+  );
+  if (!mounted) return;
 
+  if (shouldDelete == true) {
+    deletedApplications.add(app);
+    await _dbService.deleteApplication(app['id']);
+    _loadStatusCounts();
+
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text("Application deleted."),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () async {
-            await _dbService.insertApplication(app);
-            _loadStatusCounts();
-          },
+        SnackBar(
+          content: const Text("Application deleted."),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () async {
+              await _dbService.insertApplication(app);
+              _loadStatusCounts();
+            },
+          ),
+          duration: const Duration(seconds: 5),
         ),
-        duration: const Duration(seconds: 5),
-      ),
-    );
+      );
+    }
   }
 }
 
   void _editApplication(Map<String, dynamic> app) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddApplicationScreen()),
+      MaterialPageRoute(builder: (context) => UpdateApplicationScreen(applicationId: app['id'])),
     ).then((_) {
-      _loadStatusCounts();
+      if (mounted) {
+        _loadStatusCounts();
+      }
     });
   }
 }
@@ -280,7 +289,12 @@ class ApplicationCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
-  const ApplicationCard(this.application, {super.key, required this.onDelete, required this.onEdit});
+  const ApplicationCard({
+    super.key, 
+    required this.application, 
+    required this.onDelete, 
+    required this.onEdit
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -303,13 +317,15 @@ class ApplicationCard extends StatelessWidget {
           SlidableAction(
             icon: Icons.edit,
             label: 'Edit',
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.green,
+            borderRadius: BorderRadius.circular(16),
             onPressed: (_) => onEdit(),
           ),
           SlidableAction(
             icon: Icons.delete,
             label: 'Delete',
             backgroundColor: Colors.red,
+            borderRadius: BorderRadius.circular(16),
             onPressed: (_) => onDelete(),
             padding: EdgeInsets.symmetric(horizontal: 10), 
           ),

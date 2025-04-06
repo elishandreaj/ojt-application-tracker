@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';   
 import 'add_new.dart';
 import 'update_app.dart';
+import 'view_app.dart';
 import '../services/db_service.dart';
 
 void main() async {
@@ -205,10 +206,20 @@ class DashboardState extends State<Dashboard> {
                         itemCount: applications.length,
                         itemBuilder: (context, index) {
                           final app = applications[index];
-                          return ApplicationCard(
-                            application: app, 
-                            onDelete: () => _deleteApplication(app),
-                            onEdit: () => _editApplication(app),
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ViewApplicationPage(application: app),
+                                ),
+                              );
+                            },
+                            child: ApplicationCard(
+                              application: app,
+                              onDelete: () => _deleteApplication(app),
+                              onEdit: () => _editApplication(app),
+                            ),
                           );
                         },
                       );

@@ -24,9 +24,14 @@ class ApplicationCard extends StatelessWidget {
       "Rejected": Colors.red,
     };
 
-    String displayDate = application['status'] == "To Apply"
-        ? "Deadline: ${application['date']}"
-        : "Applied: ${application['date']}";
+    String displayDate;
+    if (application['status'] == "To Apply") {
+      displayDate = "Application Deadline: ${application['date']}";
+    } else if (application['status'] == "Interview") {
+      displayDate = "Interview Schedule: ${application['date']}";
+    } else {
+      displayDate = "Applied: ${application['date']}";
+    }
 
     return Slidable(
       endActionPane: ActionPane(

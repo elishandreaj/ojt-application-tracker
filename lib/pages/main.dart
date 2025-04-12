@@ -36,12 +36,21 @@ class DashboardState extends State<Dashboard> {
   };
 
   String _sortOption = "Date Added (Ascending)";
+  String _selectedTab = "Dashboard"; 
   Map<String, int> statusCounts = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
 
   @override
   void initState() {
     super.initState();
     _loadStatusCounts();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
   }
 
   Future<void> _loadStatusCounts() async {
@@ -88,9 +97,33 @@ class DashboardState extends State<Dashboard> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Internship Application Organizer'),
-          bottom: const TabBar(
+          bottom: TabBar(
             isScrollable: true,
-            tabs: [
+            onTap: (index) {
+              setState(() {
+                switch (index) {
+                  case 0:
+                    _selectedTab = "Dashboard";
+                    break;
+                  case 1:
+                    _selectedTab = "To Apply";
+                    break;
+                  case 2:
+                    _selectedTab = "Applied";
+                    break;
+                  case 3:
+                    _selectedTab = "Interview";
+                    break;
+                  case 4:
+                    _selectedTab = "Accepted";
+                    break;
+                  case 5:
+                    _selectedTab = "Rejected";
+                    break;
+                }
+              });
+            },
+            tabs: const [
               Tab(text: "Dashboard"),
               Tab(text: "To Apply"),
               Tab(text: "Applied"),
@@ -100,53 +133,57 @@ class DashboardState extends State<Dashboard> {
             ],
           ),
         ),
-        body: Scrollbar(  
-          child: SingleChildScrollView(  
+        body: Scrollbar(
+          child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: Column(  
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Overview",
-                      style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+                  if (_selectedTab == "Dashboard") ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Overview",
+                        style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: tagColors.keys.map((tag) {
-                      return Container(
-                        width: (MediaQuery.of(context).size.width / 2) - 20 > 0
-                          ? (MediaQuery.of(context).size.width / 2) - 20
-                          : 0, 
-                        height: 80,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            left: BorderSide(color: tagColors[tag]!, width: 4),
-                          ),
-                          color: Colors.white,
-                          boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 4.0)],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "${statusCounts[tag] ?? 0}",
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: tagColors.keys.map((tag) {
+                        return Container(
+                          width: (MediaQuery.of(context).size.width / 2) - 20 > 0
+                              ? (MediaQuery.of(context).size.width / 2) - 20
+                              : 0,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: tagColors[tag]!, width: 4),
                             ),
-                            Text(tag, textAlign: TextAlign.center),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
+                            color: Colors.white,
+                            boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 4.0)],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${statusCounts[tag] ?? 0}",
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              Text(tag, textAlign: TextAlign.center),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
                   TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search',
                       prefixIcon: const Icon(Icons.search),
@@ -180,7 +217,7 @@ class DashboardState extends State<Dashboard> {
                             MaterialPageRoute(builder: (context) => AddApplicationScreen()),
                           ).then((_) {
                             if (mounted) {
-                              _loadStatusCounts(); 
+                              _loadStatusCounts();
                             }
                           });
                         },
@@ -190,7 +227,7 @@ class DashboardState extends State<Dashboard> {
                   ),
                   const SizedBox(height: 20),
 
-                  StreamBuilder<List<Map<String, dynamic>>>(  
+                  StreamBuilder<List<Map<String, dynamic>>>(
                     stream: fetchApplications(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -199,13 +236,33 @@ class DashboardState extends State<Dashboard> {
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Center(child: Text("No applications yet."));
                       }
+                      final filteredApplications = snapshot.data!.where((app) {
+                        final company = app['company'].toString().toLowerCase();
+                        final role = app['role'].toString().toLowerCase();
+                        final location = app['location'].toString().toLowerCase();
+                        final status = app['status'].toString().toLowerCase();
+                        final date = app['date'].toString().toLowerCase();
 
-                      final applications = _sortApplications(snapshot.data!.toList());
-                      return ListView.builder(
-                        shrinkWrap: true, 
-                        itemCount: applications.length,
-                        itemBuilder: (context, index) {
-                          final app = applications[index];
+                        final matchesSearchQuery = company.contains(_searchQuery.toLowerCase()) ||
+                            role.contains(_searchQuery.toLowerCase()) ||
+                            location.contains(_searchQuery.toLowerCase()) ||
+                            status.contains(_searchQuery.toLowerCase()) ||
+                            date.contains(_searchQuery.toLowerCase());
+
+                        final matchesStatus = _selectedTab == "Dashboard" || status == _selectedTab.toLowerCase();
+
+                        return matchesSearchQuery && matchesStatus;
+                      }).toList();
+
+                      if (filteredApplications.isEmpty) {
+                        return const Center(child: Text("No applications found."));
+                      }
+
+                      final sortedApplications = _sortApplications(filteredApplications);
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: sortedApplications.map((app) {
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -221,7 +278,7 @@ class DashboardState extends State<Dashboard> {
                               onEdit: () => _editApplication(app),
                             ),
                           );
-                        },
+                        }).toList(),
                       );
                     },
                   ),

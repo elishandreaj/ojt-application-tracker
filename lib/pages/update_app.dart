@@ -118,7 +118,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     DateTime firstDate;
     DateTime lastDate;
 
-    if (applicationStatus == 'To Apply') {
+    if (['To Apply', 'Interview'].contains(applicationStatus)) {
       firstDate = now;
       lastDate = DateTime(2100);
     } else {

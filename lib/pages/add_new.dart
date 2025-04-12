@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/db_service.dart';
+import '../utils/constants.dart';
 
 class AddApplicationScreen extends StatefulWidget {
   const AddApplicationScreen({super.key});
@@ -192,7 +193,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 DropdownButton<String>(
                   value: applicationStatus,
                   isExpanded: true,
-                  items: ["To Apply", "Applied", "Interview", "Accepted", "Rejected"]
+                  items: kApplicationStatuses
                       .map((status) => DropdownMenuItem(value: status, child: Text(status)))
                       .toList(),
                   onChanged: (value) {

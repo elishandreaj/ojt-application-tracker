@@ -65,7 +65,7 @@ class ViewApplicationPage extends StatelessWidget {
 
             // Dates Section
             Text(
-              'Date of Application: ${application['date'] ?? '-'}',
+              _getDateLabel(application['status']) + (application['date'] ?? '-'),
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
             Text(
@@ -126,6 +126,18 @@ class ViewApplicationPage extends StatelessWidget {
       ),
     );
   }
+
+    String _getDateLabel(String? status) {
+    switch (status) {
+      case "To Apply":
+        return "Application Deadline: ";
+      case "Interview":
+        return "Interview Schedule: ";
+      default:
+        return "Date of Application: ";
+    }
+  }
+
 
   Widget _infoRow(String label, String? value) {
     return Padding(

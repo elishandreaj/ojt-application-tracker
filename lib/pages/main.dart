@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';   
+import 'package:flutter/material.dart'; 
 import 'add_new.dart';
 import 'update_app.dart';
 import 'view_app.dart';
 import '../services/db_service.dart';
+import '../widgets/application_card.dart';
+import '../utils/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,13 +28,7 @@ class DashboardState extends State<Dashboard> {
   final DatabaseService _dbService = DatabaseService();
   List<Map<String, dynamic>> deletedApplications = []; 
 
-  final Map<String, Color> tagColors = {
-    "To Apply": Colors.blue,
-    "Applied": Colors.purple,
-    "Interview": Colors.orange,
-    "Accepted": Colors.green,
-    "Rejected": Colors.red,
-  };
+  final Map<String, Color> tagColors = kStatusColors;
 
   String _sortOption = "Date Added (Ascending)";
   String _selectedTab = "Dashboard"; 
@@ -101,35 +96,16 @@ class DashboardState extends State<Dashboard> {
             isScrollable: true,
             onTap: (index) {
               setState(() {
-                switch (index) {
-                  case 0:
-                    _selectedTab = "Dashboard";
-                    break;
-                  case 1:
-                    _selectedTab = "To Apply";
-                    break;
-                  case 2:
-                    _selectedTab = "Applied";
-                    break;
-                  case 3:
-                    _selectedTab = "Interview";
-                    break;
-                  case 4:
-                    _selectedTab = "Accepted";
-                    break;
-                  case 5:
-                    _selectedTab = "Rejected";
-                    break;
+                if (index == 0) {
+                  _selectedTab = "Dashboard";
+                } else {
+                  _selectedTab = kApplicationStatuses[index - 1];
                 }
               });
             },
-            tabs: const [
-              Tab(text: "Dashboard"),
-              Tab(text: "To Apply"),
-              Tab(text: "Applied"),
-              Tab(text: "Interview"),
-              Tab(text: "Accepted"),
-              Tab(text: "Rejected"),
+            tabs: [
+              const Tab(text: "Dashboard"),
+              ...kApplicationStatuses.map((status) => Tab(text: status)).toList(),
             ],
           ),
         ),
@@ -349,100 +325,5 @@ class DashboardState extends State<Dashboard> {
         _loadStatusCounts();
       }
     });
-  }
-}
-
-class ApplicationCard extends StatelessWidget {
-  final Map<String, dynamic> application;
-  final VoidCallback onDelete;
-  final VoidCallback onEdit;
-
-  const ApplicationCard({
-    super.key, 
-    required this.application, 
-    required this.onDelete, 
-    required this.onEdit
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tagColors = {
-      "To Apply": Colors.blue,
-      "Applied": Colors.purple,
-      "Interview": Colors.orange,
-      "Accepted": Colors.green,
-      "Rejected": Colors.red,
-    };
-
-    String displayDate = application['status'] == "To Apply"
-        ? "Deadline: ${application['date']}"
-        : "Applied: ${application['date']}";
-
-    return Slidable(
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            icon: Icons.edit,
-            label: 'Edit',
-            backgroundColor: Colors.green,
-            borderRadius: BorderRadius.circular(16),
-            onPressed: (_) => onEdit(),
-          ),
-          SlidableAction(
-            icon: Icons.delete,
-            label: 'Delete',
-            backgroundColor: Colors.red,
-            borderRadius: BorderRadius.circular(16),
-            onPressed: (_) => onDelete(),
-            padding: EdgeInsets.symmetric(horizontal: 10), 
-          ),
-        ],
-      ),
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      application['company'],
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: tagColors[application['status']],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      application['status'],
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "${application['role']} | ${application['location']}",
-                style: const TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                displayDate,
-                style: const TextStyle(color: Colors.black87, fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

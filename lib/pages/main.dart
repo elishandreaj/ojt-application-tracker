@@ -240,13 +240,17 @@ class DashboardState extends State<Dashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: sortedApplications.map((app) {
                           return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ViewApplicationPage(application: app),
                                 ),
                               );
+                              if (mounted) {
+                                await _loadStatusCounts();
+                                setState(() {}); 
+                              }
                             },
                             child: ApplicationCard(
                               application: app,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/db_service.dart';
+import 'update_app.dart';
 
 class ViewApplicationPage extends StatelessWidget {
   final Map<String, dynamic> application;
@@ -121,6 +123,72 @@ class ViewApplicationPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            // Edit and Delete Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UpdateApplicationScreen(applicationId: application['id']),
+                        ),
+                      );
+                      Navigator.pop(context); // Return and refresh
+                    },
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    label: const Text("Edit", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      bool? shouldDelete = await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Confirm Deletion"),
+                          content: const Text("Are you sure you want to delete this application?"),
+                          actions: [
+                            TextButton(
+                              child: const Text("Cancel"),
+                              onPressed: () => Navigator.of(context).pop(false),
+                            ),
+                            TextButton(
+                              child: const Text("Delete"),
+                              onPressed: () => Navigator.of(context).pop(true),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (shouldDelete == true) {
+                        await DatabaseService().deleteApplication(application['id']);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Application deleted.")),
+                          );
+                          Navigator.pop(context); // Go back to refresh the list
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.white),
+                    label: const Text("Delete", style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
           ],
         ),
       ),

@@ -1,9 +1,8 @@
-// lib/widgets/application_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ApplicationCard extends StatelessWidget {
-  final Map<String, dynamic> application;
+    final Map<String, dynamic> application;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
@@ -16,6 +15,7 @@ class ApplicationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /// Mapping of application statuses to their corresponding colors.
     final tagColors = {
       "To Apply": Colors.blue,
       "Applied": Colors.purple,
@@ -24,6 +24,7 @@ class ApplicationCard extends StatelessWidget {
       "Rejected": Colors.red,
     };
 
+    /// Determine the display date based on the application's status.
     String displayDate;
     if (application['status'] == "To Apply") {
       displayDate = "Application Deadline: ${application['date']}";
@@ -37,6 +38,7 @@ class ApplicationCard extends StatelessWidget {
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
+          /// Edit action for the application.
           SlidableAction(
             icon: Icons.edit,
             label: 'Edit',
@@ -44,6 +46,8 @@ class ApplicationCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             onPressed: (_) => onEdit(),
           ),
+
+          /// Delete action for the application.
           SlidableAction(
             icon: Icons.delete,
             label: 'Delete',
@@ -61,6 +65,7 @@ class ApplicationCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// Header row displaying the company name and status badge.
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -85,11 +90,15 @@ class ApplicationCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
+
+              /// Display the role and location of the application.
               Text(
                 "${application['role']} | ${application['location']}",
                 style: const TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 4),
+
+              /// Display the relevant date based on the application's status.
               Text(
                 displayDate,
                 style: const TextStyle(color: Colors.black87, fontStyle: FontStyle.italic),

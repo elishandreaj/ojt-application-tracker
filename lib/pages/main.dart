@@ -257,12 +257,22 @@ class DashboardState extends State<Dashboard> {
           final location = app['location'].toString().toLowerCase();
           final status = app['status'].toString().toLowerCase();
           final date = app['date'].toString().toLowerCase();
+          final setup = app['setup'].toString().toLowerCase();
+          final requirements = (app['requirements'] as String?)
+              ?.split(',')
+              .map((req) => req.trim().toLowerCase())
+              .toList() ?? [];
 
+          final matchesRequirements = requirements.any((req) => req.contains(_searchQuery.toLowerCase()));
+
+          // Check if the search query matches any of the fields
           final matchesSearchQuery = company.contains(_searchQuery.toLowerCase()) ||
               role.contains(_searchQuery.toLowerCase()) ||
               location.contains(_searchQuery.toLowerCase()) ||
               status.contains(_searchQuery.toLowerCase()) ||
-              date.contains(_searchQuery.toLowerCase());
+              date.contains(_searchQuery.toLowerCase()) ||
+              setup.contains(_searchQuery.toLowerCase()) ||
+              matchesRequirements;
 
           final matchesStatus = _selectedTab == "Dashboard" || status == _selectedTab.toLowerCase();
 

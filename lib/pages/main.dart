@@ -190,7 +190,7 @@ class DashboardState extends State<Dashboard> {
                   MaterialPageRoute(builder: (context) => AddApplicationScreen()),
                 ).then((_) {
                   if (mounted) {
-                    _loadStatusCounts();
+                    _refreshData();
                   }
                 });
               },
@@ -255,8 +255,19 @@ class DashboardState extends State<Dashboard> {
       MaterialPageRoute(builder: (context) => UpdateApplicationScreen(applicationId: app['id'])),
     ).then((_) {
       if (mounted) {
-        _loadStatusCounts();
+        _refreshData();
       }
     });
+  }
+
+  void _refreshData() {
+    _loadStatusCounts();
+    setState(() {}); // Forces the widget to rebuild and call fetchApplications()
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Clean up the controller
+    super.dispose();              
   }
 }

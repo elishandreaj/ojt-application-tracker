@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'add_new.dart';
 import 'update_app.dart';
-import 'view_app.dart';
 import '../services/db_service.dart';
-import '../widgets/application_card.dart';
 import '../utils/constants.dart';
+import '../widgets/overview_section.dart';
+import '../widgets/applications_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,9 +28,9 @@ class DashboardState extends State<Dashboard> {
   final DatabaseService _dbService = DatabaseService();
   List<Map<String, dynamic>> deletedApplications = [];
 
-    final Map<String, Color> tagColors = kStatusColors;
+  final Map<String, Color> tagColors = kStatusColors;
 
-    String _sortOption = "Date Added (Ascending)";
+  String _sortOption = "Date Added (Ascending)";
   String _selectedTab = "Dashboard";
   Map<String, int> statusCounts = {};
 
@@ -103,11 +103,22 @@ class DashboardState extends State<Dashboard> {
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_selectedTab == "Dashboard") _buildOverviewSection(),
+                children: [   
+                /// Builds the "Overview" section for the Dashboard tab.
+                  if (_selectedTab == "Dashboard")
+                    OverviewSection(statusCounts: statusCounts),
                   _buildSearchAndSortSection(),
                   const SizedBox(height: 20),
-                  _buildApplicationsList(),
+                /// Builds the list of applications based on the selected tab and search query.
+                  ApplicationsList(
+                    applicationStream: fetchApplications(),
+                    searchQuery: _searchQuery,
+                    selectedTab: _selectedTab,
+                    sortApplications: _sortApplications,
+                    onDelete: _deleteApplication,
+                    onEdit: _editApplication,
+                    onStatusCountsReload: _loadStatusCounts,
+                  )
                 ],
               ),
             ),
@@ -137,54 +148,6 @@ class DashboardState extends State<Dashboard> {
           ...kApplicationStatuses.map((status) => Tab(text: status)),
         ],
       ),
-    );
-  }
-
-  /// Builds the "Overview" section for the Dashboard tab.
-  Widget _buildOverviewSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "Overview",
-            style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: tagColors.keys.map((tag) {
-            return Container(
-              width: (MediaQuery.of(context).size.width / 2) - 20 > 0
-                  ? (MediaQuery.of(context).size.width / 2) - 20
-                  : 0,
-              height: 80,
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(color: tagColors[tag]!, width: 4),
-                ),
-                color: Colors.white,
-                boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 4.0)],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "${statusCounts[tag] ?? 0}",
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(tag, textAlign: TextAlign.center),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
-      ],
     );
   }
 
@@ -236,80 +199,6 @@ class DashboardState extends State<Dashboard> {
           ],
         ),
       ],
-    );
-  }
-
-  /// Builds the list of applications based on the selected tab and search query.
-  Widget _buildApplicationsList() {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: fetchApplications(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text("No applications yet."));
-        }
-
-        final filteredApplications = snapshot.data!.where((app) {
-          final company = app['company'].toString().toLowerCase();
-          final role = app['role'].toString().toLowerCase();
-          final location = app['location'].toString().toLowerCase();
-          final status = app['status'].toString().toLowerCase();
-          final date = app['date'].toString().toLowerCase();
-          final setup = app['setup'].toString().toLowerCase();
-          final requirements = (app['requirements'] as String?)
-              ?.split(',')
-              .map((req) => req.trim().toLowerCase())
-              .toList() ?? [];
-
-          final matchesRequirements = requirements.any((req) => req.contains(_searchQuery.toLowerCase()));
-
-          // Check if the search query matches any of the fields
-          final matchesSearchQuery = company.contains(_searchQuery.toLowerCase()) ||
-              role.contains(_searchQuery.toLowerCase()) ||
-              location.contains(_searchQuery.toLowerCase()) ||
-              status.contains(_searchQuery.toLowerCase()) ||
-              date.contains(_searchQuery.toLowerCase()) ||
-              setup.contains(_searchQuery.toLowerCase()) ||
-              matchesRequirements;
-
-          final matchesStatus = _selectedTab == "Dashboard" || status == _selectedTab.toLowerCase();
-
-          return matchesSearchQuery && matchesStatus;
-        }).toList();
-
-        if (filteredApplications.isEmpty) {
-          return const Center(child: Text("No applications found."));
-        }
-
-        final sortedApplications = _sortApplications(filteredApplications);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: sortedApplications.map((app) {
-            return GestureDetector(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ViewApplicationPage(application: app),
-                  ),
-                );
-                if (mounted) {
-                  await _loadStatusCounts();
-                  setState(() {});
-                }
-              },
-              child: ApplicationCard(
-                application: app,
-                onDelete: () => _deleteApplication(app),
-                onEdit: () => _editApplication(app),
-              ),
-            );
-          }).toList(),
-        );
-      },
     );
   }
 

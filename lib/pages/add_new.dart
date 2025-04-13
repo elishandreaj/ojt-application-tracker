@@ -11,6 +11,7 @@ class AddApplicationScreen extends StatefulWidget {
 }
 
 class AddApplicationScreenState extends State<AddApplicationScreen> {
+  /// Controllers for form fields.
   final TextEditingController companyController = TextEditingController();
   final TextEditingController roleController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
@@ -18,9 +19,9 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   final TextEditingController notesController = TextEditingController();
   List<TextEditingController> requirementsControllers = [];
 
-  final _formKey = GlobalKey<FormState>();
+    final _formKey = GlobalKey<FormState>();
 
-  String setUp = 'On-site';
+    String setUp = 'On-site';
   String applicationStatus = 'To Apply';
 
   @override
@@ -31,6 +32,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
 
   @override
   void dispose() {
+    // Dispose all controllers to free up resources.
     companyController.dispose();
     roleController.dispose();
     locationController.dispose();
@@ -44,56 +46,25 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
     super.dispose();
   }
 
-  void addApplication() async {
-    if (_formKey.currentState!.validate()) {
-      List<String> requirements = requirementsControllers
-          .where((controller) => controller.text.isNotEmpty)
-          .map((controller) => controller.text)
-          .toList();
-
-      try {
-        await DatabaseService().insertApplication({
-          'company': companyController.text,
-          'role': roleController.text,
-          'location': locationController.text,
-          'setup': setUp,
-          'status': applicationStatus,
-          'date': dateController.text,
-          'date_added': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-          'requirements': requirements.join(','),
-          'notes': notesController.text,
-        });
-
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Application added successfully!')),
-      );
-        Navigator.pop(context);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to add application: $e")),
-        );
-      }
-    }
-  }
-
+  /// Adds a new requirement field.
   void addRequirementField() {
     setState(() {
       requirementsControllers.add(TextEditingController());
     });
   }
 
-  void removeRequirementField(int index) {
+    void removeRequirementField(int index) {
     setState(() {
       requirementsControllers[index].dispose();
       requirementsControllers.removeAt(index);
     });
   }
 
+  /// Opens a date picker dialog and sets the selected date in the date field.
   Future<void> pickDate() async {
     DateTime now = DateTime.now();
-    
-    DateTime firstDate;
+
+        DateTime firstDate;
     DateTime lastDate;
 
     if (['To Apply', 'Interview'].contains(applicationStatus)) {
@@ -126,6 +97,45 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
     }
   }
 
+  /// Submits the application by saving it to the database.
+  void addApplication() async {
+    if (_formKey.currentState!.validate()) {
+      // Collect all non-empty requirements.
+      List<String> requirements = requirementsControllers
+          .where((controller) => controller.text.isNotEmpty)
+          .map((controller) => controller.text)
+          .toList();
+
+      try {
+        // Insert the application into the database.
+        await DatabaseService().insertApplication({
+          'company': companyController.text,
+          'role': roleController.text,
+          'location': locationController.text,
+          'setup': setUp,
+          'status': applicationStatus,
+          'date': dateController.text,
+          'date_added': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          'requirements': requirements.join(','),
+          'notes': notesController.text,
+        });
+
+        if (!mounted) return;
+
+        // Show success message and navigate back.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Application added successfully!')),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        // Show error message if the operation fails.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to add application: $e")),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,6 +148,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                /// Company field.
                 TextFormField(
                   key: Key('company'),
                   controller: companyController,
@@ -150,6 +161,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                     return null;
                   },
                 ),
+
+                /// Role field.
                 TextFormField(
                   key: Key('role'),
                   controller: roleController,
@@ -162,6 +175,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                     return null;
                   },
                 ),
+
+                /// Location field.
                 TextFormField(
                   key: Key('location'),
                   controller: locationController,
@@ -170,6 +185,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
                 SizedBox(height: 10),
 
+                /// Setup type selection (On-site, Online, Hybrid).
                 Text("Set-up", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Row(
                   children: [
@@ -189,6 +205,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
 
                 SizedBox(height: 10),
+
+                /// Application status dropdown.
                 Text("Application Status", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 DropdownButton<String>(
                   value: applicationStatus,
@@ -204,6 +222,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
 
                 SizedBox(height: 10),
+
+                /// Date picker field.
                 TextFormField(
                   key: Key('date'),
                   controller: dateController,
@@ -222,6 +242,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
 
                 SizedBox(height: 20),
+
+                /// Requirements section.
                 Text("Requirements", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Column(
                   children: List.generate(requirementsControllers.length, (index) {
@@ -247,6 +269,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
 
                 SizedBox(height: 20),
+
+                /// Notes field.
                 TextFormField(
                   key: Key('notes'),
                   controller: notesController,
@@ -254,6 +278,8 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
                 ),
 
                 SizedBox(height: 20),
+
+                /// Submit button.
                 Center(
                   child: ElevatedButton(
                     onPressed: addApplication,

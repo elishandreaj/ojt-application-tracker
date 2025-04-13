@@ -15,6 +15,7 @@ class UpdateApplicationScreen extends StatefulWidget {
 class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  /// Controllers for form fields.
   late TextEditingController companyNameController;
   late TextEditingController positionController;
   late TextEditingController locationController;
@@ -35,9 +36,12 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     _fetchApplicationData();
   }
 
+  /// Fetches the application data from the database and initializes the form fields.
   Future<void> _fetchApplicationData() async {
     DatabaseService dbService = DatabaseService();
     List<Map<String, dynamic>> applications = await dbService.fetchApplications();
+
+    // Find the application with the matching ID.
     var appData = applications.firstWhere(
       (app) => app['id'].toString() == widget.applicationId.toString(),
       orElse: () => {},
@@ -48,6 +52,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     setState(() {
       applicationData = appData;
 
+      // Initialize controllers with the fetched data.
       companyNameController = TextEditingController(text: appData['company']);
       positionController = TextEditingController(text: appData['role']);
       locationController = TextEditingController(text: appData['location']);
@@ -66,31 +71,25 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     });
   }
 
+  /// Updates the application in the database with the modified data.
   void _updateApplication() async {
     if (_formKey.currentState!.validate()) {
-      List<String> updatedRequirements = requirementsControllers
+            List<String> updatedRequirements = requirementsControllers
           .where((controller) => controller.text.isNotEmpty)
           .map((controller) => controller.text)
           .toList();
 
-      String updatedCompanyName = companyNameController.text;
-      String updatedPosition = positionController.text;
-      String updatedLocation = locationController.text;
-      String updatedSetup = setUp;
-      String updatedStatus = applicationStatus;
-      String updatedDate = dateController.text;
-      String updatedNotes = notesController.text;
-
+      // Prepare the updated data.
       Map<String, dynamic> updatedData = {
-        'company': updatedCompanyName,
-        'role': updatedPosition,
-        'location': updatedLocation,
-        'setup': updatedSetup,
-        'status': updatedStatus,
-        'date': updatedDate,
+        'company': companyNameController.text,
+        'role': positionController.text,
+        'location': locationController.text,
+        'setup': setUp,
+        'status': applicationStatus,
+        'date': dateController.text,
         'date_added': applicationData!['date_added'],
         'requirements': updatedRequirements.join(','),
-        'notes': updatedNotes,
+        'notes': notesController.text,
       };
 
       try {
@@ -100,10 +99,10 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Application updated successfully!')),
+          const SnackBar(content: Text('Application updated successfully!')),
         );
         Navigator.pop(context);
-      } catch (e) {
+      }  catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error updating application: $e')),
@@ -112,9 +111,10 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     }
   }
 
+  /// Opens a date picker dialog and sets the selected date in the date field.
   Future<void> pickDate() async {
     DateTime now = DateTime.now();
-    
+
     DateTime firstDate;
     DateTime lastDate;
 
@@ -134,7 +134,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
       builder: (context, child) {
         return Dialog(
           child: Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             child: child,
           ),
         );
@@ -150,6 +150,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
 
   @override
   void dispose() {
+    // Dispose all controllers to free up resources.
     companyNameController.dispose();
     positionController.dispose();
     locationController.dispose();
@@ -157,9 +158,11 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
     statusController.dispose();
     dateController.dispose();
     notesController.dispose();
+
     for (var controller in requirementsControllers) {
       controller.dispose();
     }
+
     super.dispose();
   }
 
@@ -179,6 +182,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
           key: _formKey,
           child: ListView(
             children: [
+              /// Company Name field.
               TextFormField(
                 controller: companyNameController,
                 decoration: const InputDecoration(labelText: 'Company Name'),
@@ -189,6 +193,8 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   return null;
                 },
               ),
+
+              /// Position field.
               TextFormField(
                 controller: positionController,
                 decoration: const InputDecoration(labelText: 'Position'),
@@ -199,6 +205,8 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   return null;
                 },
               ),
+
+              /// Location field.
               TextFormField(
                 controller: locationController,
                 decoration: const InputDecoration(labelText: 'Location'),
@@ -209,6 +217,8 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   return null;
                 },
               ),
+
+              /// Setup type selection (On-site, Online, Hybrid).
               Row(
                 children: [
                   Radio(
@@ -243,6 +253,8 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   const Text("Hybrid"),
                 ],
               ),
+
+              /// Application status dropdown.
               DropdownButton<String>(
                 value: applicationStatus,
                 isExpanded: true,
@@ -255,6 +267,8 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   });
                 },
               ),
+
+              /// Date picker field.
               TextFormField(
                 controller: dateController,
                 decoration: const InputDecoration(
@@ -270,8 +284,11 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 10),
-              Text("Requirements"),
+
+              /// Requirements section.
+              const Text("Requirements"),
               ...List.generate(requirementsControllers.length, (index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -291,11 +308,16 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
                 },
                 child: const Text("+ Add Requirement"),
               ),
+
+              /// Notes field.
               TextFormField(
                 controller: notesController,
                 decoration: const InputDecoration(labelText: 'Notes'),
               ),
+
               const SizedBox(height: 20),
+
+              /// Submit button.
               ElevatedButton(
                 onPressed: _updateApplication,
                 child: const Text('Update Application'),

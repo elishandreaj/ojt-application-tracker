@@ -14,7 +14,7 @@ class ViewApplicationPage extends StatelessWidget {
     "Rejected": Colors.red,
   };
 
-  ViewApplicationPage({Key? key, required this.application}) : super(key: key);
+  ViewApplicationPage({super.key, required this.application});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,8 @@ class ViewApplicationPage extends StatelessWidget {
         .toList() ?? [];
 
     // Get the status color based on the status
-    final String status = application['status'] ?? 'Unknown';
-    final statusBackgroundColor = statusColor[status] ?? Colors.blue.shade100;
+    final String status = application['status'] ?? 'To Apply';
+    final statusBackgroundColor = statusColor[status] ?? Colors.blue;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +136,9 @@ class ViewApplicationPage extends StatelessWidget {
                           builder: (context) => UpdateApplicationScreen(applicationId: application['id']),
                         ),
                       );
-                      Navigator.pop(context); // Return and refresh
+                      if (context.mounted) { 
+                        Navigator.pop(context);
+                      }
                     },
                     icon: const Icon(Icons.edit, color: Colors.white),
                     label: const Text("Edit", style: TextStyle(color: Colors.white)),

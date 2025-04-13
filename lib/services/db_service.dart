@@ -37,9 +37,9 @@ class DatabaseService {
             company TEXT NOT NULL,
             role TEXT NOT NULL,
             location TEXT NOT NULL,
-            setup TEXT,
-            status TEXT,
-            date TEXT,
+            setup TEXT NOT NULL,
+            status TEXT NOT NULL,
+            date TEXT NOT NULL,
             date_added TEXT,
             notes TEXT,
             requirements TEXT  

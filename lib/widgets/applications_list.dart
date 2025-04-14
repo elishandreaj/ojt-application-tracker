@@ -27,15 +27,20 @@ class ApplicationsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Map<String, dynamic>>>(
+      //StreamBuilder listens to the applicationStream
       stream: applicationStream,
+      //Every time the stream emits new data, rebuilds the UI.
       builder: (context, snapshot) {
+        //If the stream is still loading, show a spinner.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        //If there’s no data, show a message saying no applications exist yet.
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text("No applications yet."));
         }
 
+        //filters the list based on Search Query and active tabs
         final filteredApplications = snapshot.data!.where((app) {
           final company = app['company'].toString().toLowerCase();
           final role = app['role'].toString().toLowerCase();
@@ -47,9 +52,10 @@ class ApplicationsList extends StatelessWidget {
               ?.split(',')
               .map((req) => req.trim().toLowerCase())
               .toList() ?? [];
-
           final matchesRequirements = requirements.any((req) => req.contains(searchQuery.toLowerCase()));
 
+
+          //matchesSearchQuery checks for matches in search in query
           final matchesSearchQuery = company.contains(searchQuery.toLowerCase()) ||
               role.contains(searchQuery.toLowerCase()) ||
               location.contains(searchQuery.toLowerCase()) ||
@@ -58,6 +64,7 @@ class ApplicationsList extends StatelessWidget {
               setup.contains(searchQuery.toLowerCase()) ||
               matchesRequirements;
 
+          //matchesStatus checks if current tab matches the app's status
           final matchesStatus = selectedTab == "Dashboard" || status == selectedTab.toLowerCase();
 
           return matchesSearchQuery && matchesStatus;
@@ -71,8 +78,10 @@ class ApplicationsList extends StatelessWidget {
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          //Loops through every sorted application.
           children: sortedApplications.map((app) {
             return GestureDetector(
+              //Tapping the card navigates to view_app.dart
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -80,8 +89,11 @@ class ApplicationsList extends StatelessWidget {
                     builder: (context) => ViewApplicationPage(application: app),
                   ),
                 );
+                //When the user returns, the UI refreshes status counts
                 await onStatusCountsReload();
               },
+
+              //Each card has its own edit and delete buttons wired up to logic from the parent widget.
               child: ApplicationCard(
                 application: app,
                 onDelete: () => onDelete(app),

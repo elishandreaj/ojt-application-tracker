@@ -24,23 +24,35 @@ class Dashboard extends StatefulWidget {
   DashboardState createState() => DashboardState();
 }
 
+
 class DashboardState extends State<Dashboard> {
+  
+  /// Create an instance of our custom DatabaseService class
   final DatabaseService _dbService = DatabaseService();
+  
+  /// List temporarily holds any deleted applications (for the undo delete feature)
   List<Map<String, dynamic>> deletedApplications = [];
 
+  /// For storing the mapping between each application status & color (status & color defined in constants.dart)
   final Map<String, Color> tagColors = kStatusColors;
 
-  String _sortOption = "Date Added (Ascending)";
+  /// To track the current sorting method chosen by the user
+  String _sortOption = "Date Added (  Ascending)";
+
+  /// To track which tab is currently selected
   String _selectedTab = "Dashboard";
+
+  /// Map to store the number of applications for each status (used in overview_section)
   Map<String, int> statusCounts = {};
 
   /// Controller for the search input field.
   final TextEditingController _searchController = TextEditingController();
 
-  /// Current search query entered by the user.
+  /// To store the current search query entered by the user.
   String _searchQuery = '';
 
   @override
+  // Initialize values, set up listeners, and fetch data
   void initState() {
     super.initState();
     _loadStatusCounts();
@@ -57,7 +69,10 @@ class DashboardState extends State<Dashboard> {
     final counts = <String, int>{};
 
     for (var app in applications) {
-      final status = app['status'] as String;
+      //get the status of each application and cast it as String
+      final status = app['status'] as String;    
+
+      //Status is in the map -> increment count, else, return 0.
       counts[status] = (counts[status] ?? 0) + 1;
     }
 
@@ -74,14 +89,18 @@ class DashboardState extends State<Dashboard> {
   /// Sorts the list of applications based on the selected sorting option.
   List<Map<String, dynamic>> _sortApplications(List<Map<String, dynamic>> apps) {
     switch (_sortOption) {
+      //Date added is from Oldest to Newest
       case "Date Added (Ascending)":
         apps.sort((a, b) => a['date_added'].compareTo(b['date_added']));
         break;
+      
+      //Date added is from Newest to Oldest
       case "Date Added (Descending)":
         apps.sort((a, b) => b['date_added'].compareTo(a['date_added']));
         break;
+      
       case "Alphabetical":
-        apps.sort((a, b) {
+        apps.sort((a, b) {  
           String companyA = a['company'].toString().toLowerCase();
           String companyB = b['company'].toString().toLowerCase();
           return companyA.compareTo(companyB);
@@ -107,6 +126,7 @@ class DashboardState extends State<Dashboard> {
                 /// Builds the "Overview" section for the Dashboard tab.
                   if (_selectedTab == "Dashboard")
                     OverviewSection(statusCounts: statusCounts),
+                /// Builds the search bar, the sorting section, and the add new button  
                   _buildSearchAndSortSection(),
                   const SizedBox(height: 20),
                 /// Builds the list of applications based on the selected tab and search query.
@@ -114,7 +134,7 @@ class DashboardState extends State<Dashboard> {
                     applicationStream: fetchApplications(),
                     searchQuery: _searchQuery,
                     selectedTab: _selectedTab,
-                    sortApplications: _sortApplications,
+                    sortApplications: _sortApplications,  
                     onDelete: _deleteApplication,
                     onEdit: _editApplication,
                     onStatusCountsReload: _loadStatusCounts,
@@ -155,6 +175,7 @@ class DashboardState extends State<Dashboard> {
   Widget _buildSearchAndSortSection() {
     return Column(
       children: [
+        ///Search Bar Section
         TextField(
           controller: _searchController,
           decoration: InputDecoration(
@@ -164,9 +185,13 @@ class DashboardState extends State<Dashboard> {
           ),
         ),
         const SizedBox(height: 10),
+
+        ///Row to layout sorting dropdown and add new button
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            
+            /// For the Sorting Dropdown
             DropdownButton<String>(
               value: _sortOption,
               hint: const Text("Sort by"),
@@ -176,19 +201,27 @@ class DashboardState extends State<Dashboard> {
                   value: value,
                   child: Text(value),
                 );
-              }).toList(),
+              }).toList(), 
+
               onChanged: (value) {
                 setState(() {
                   _sortOption = value!;
                 });
               },
+
             ),
+            
+            ///For the button to add new application
             ElevatedButton(
               onPressed: () {
+                //on press, navigate to the add_new.dart
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AddApplicationScreen()),
-                ).then((_) {
+
+                //callback that runs after the user comes back from the AddApplicationScreen
+                //To refresh the data to update the overview section
+                ).then((_) {          
                   if (mounted) {
                     _refreshData();
                   }
@@ -262,12 +295,13 @@ class DashboardState extends State<Dashboard> {
 
   void _refreshData() {
     _loadStatusCounts();
-    setState(() {}); // Forces the widget to rebuild and call fetchApplications()
+    setState(() {}); 
   }
 
   @override
   void dispose() {
-    _searchController.dispose(); // Clean up the controller
+    //releases the memory used by the TextEditingController for the search field to prevent memory leaks
+    _searchController.dispose(); 
     super.dispose();              
   }
 }

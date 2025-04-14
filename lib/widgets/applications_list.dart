@@ -5,7 +5,6 @@ import 'application_card.dart';
 /// Builds the list of applications based on the selected tab and search query.
 
 class ApplicationsList extends StatelessWidget {
-  //parameters passed to the widget from its parent
   final Stream<List<Map<String, dynamic>>> applicationStream;
   final String searchQuery;
   final String selectedTab;
@@ -30,7 +29,7 @@ class ApplicationsList extends StatelessWidget {
     return StreamBuilder<List<Map<String, dynamic>>>(
       //StreamBuilder listens to the applicationStream
       stream: applicationStream,
-      //Every time the stream emits new data, it rebuilds the UI.
+      //Every time the stream emits new data, rebuilds the UI.
       builder: (context, snapshot) {
         //If the stream is still loading, show a spinner.
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -43,7 +42,6 @@ class ApplicationsList extends StatelessWidget {
 
         //filters the list based on Search Query and active tabs
         final filteredApplications = snapshot.data!.where((app) {
-          //Each field of the application is checked if it contains the search query.
           final company = app['company'].toString().toLowerCase();
           final role = app['role'].toString().toLowerCase();
           final location = app['location'].toString().toLowerCase();
@@ -57,6 +55,7 @@ class ApplicationsList extends StatelessWidget {
           final matchesRequirements = requirements.any((req) => req.contains(searchQuery.toLowerCase()));
 
 
+          //matchesSearchQuery checks for matches in search in query
           final matchesSearchQuery = company.contains(searchQuery.toLowerCase()) ||
               role.contains(searchQuery.toLowerCase()) ||
               location.contains(searchQuery.toLowerCase()) ||
@@ -82,7 +81,7 @@ class ApplicationsList extends StatelessWidget {
           //Loops through every sorted application.
           children: sortedApplications.map((app) {
             return GestureDetector(
-              //Tapping the card navigates to a details page for that application.
+              //Tapping the card navigates to view_app.dart
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -90,7 +89,7 @@ class ApplicationsList extends StatelessWidget {
                     builder: (context) => ViewApplicationPage(application: app),
                   ),
                 );
-                //When the user returns, the UI refreshes status counts via a callback.
+                //When the user returns, the UI refreshes status counts
                 await onStatusCountsReload();
               },
 

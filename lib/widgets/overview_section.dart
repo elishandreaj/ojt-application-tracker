@@ -24,8 +24,8 @@ class OverviewSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Wrap(
-          spacing: 10,                                            //horizontal spacing between boxes.
-          runSpacing: 10,                                         //vertical spacing between boxes
+          spacing: 10,                                            
+          runSpacing: 10,                                         
           
           ////Gets the corresponding color for the status tag.
           children: kApplicationStatuses.map((tag) {
@@ -61,7 +61,7 @@ class OverviewSection extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),    //Converts the results of .map() into a List<Widget> which is required by Wrap.
+          }).toList(),    
         ),
         const SizedBox(height: 20),
       ],

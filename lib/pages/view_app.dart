@@ -5,7 +5,6 @@ import 'update_app.dart';
 class ViewApplicationPage extends StatelessWidget {
   final Map<String, dynamic> application;
 
-  // Mapping status to color
   final Map<String, Color> statusColor = {
     "To Apply": Colors.blue,
     "Applied": Colors.purple,
@@ -19,9 +18,9 @@ class ViewApplicationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> requirements = (application['requirements'] as String?)
-        ?.split(',') // Split by commas instead of newline
-        .map((r) => r.trim()) // Trim any extra spaces around each requirement
-        .where((r) => r.isNotEmpty) // Filter out empty strings if any
+        ?.split(',')                    // Split by commas instead of newline
+        .map((r) => r.trim())           // Trim any extra spaces around each requirement
+        .where((r) => r.isNotEmpty)     // Filter out empty strings if any
         .toList() ?? [];
 
     // Get the status color based on the status
@@ -124,6 +123,7 @@ class ViewApplicationPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            
             // Edit and Delete Buttons
             Row(
               children: [

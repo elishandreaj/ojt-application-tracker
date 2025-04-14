@@ -52,7 +52,7 @@ class DashboardState extends State<Dashboard> {
   String _searchQuery = '';
 
   @override
-  // This is where we initialize values, set up listeners, and fetch data that we want to load only once
+  // Initialize values, set up listeners, and fetch data
   void initState() {
     super.initState();
     _loadStatusCounts();
@@ -72,7 +72,7 @@ class DashboardState extends State<Dashboard> {
       //get the status of each application and cast it as String
       final status = app['status'] as String;    
 
-      //Status in the map -> increment count, else, return 0.
+      //Status is in the map -> increment count, else, return 0.
       counts[status] = (counts[status] ?? 0) + 1;
     }
 
@@ -89,12 +89,16 @@ class DashboardState extends State<Dashboard> {
   /// Sorts the list of applications based on the selected sorting option.
   List<Map<String, dynamic>> _sortApplications(List<Map<String, dynamic>> apps) {
     switch (_sortOption) {
+      //Date added is from Oldest to Newest
       case "Date Added (Ascending)":
         apps.sort((a, b) => a['date_added'].compareTo(b['date_added']));
         break;
+      
+      //Date added is from Newest to Oldest
       case "Date Added (Descending)":
         apps.sort((a, b) => b['date_added'].compareTo(a['date_added']));
         break;
+      
       case "Alphabetical":
         apps.sort((a, b) {  
           String companyA = a['company'].toString().toLowerCase();
@@ -191,8 +195,6 @@ class DashboardState extends State<Dashboard> {
             DropdownButton<String>(
               value: _sortOption,
               hint: const Text("Sort by"),
-              //Creates a list of dropdown items from predefined sort options.
-              //then transform each string into a DropdownMenuItem
               items: ["Date Added (Ascending)", "Date Added (Descending)", "Alphabetical"]
                   .map((String value) {
                 return DropdownMenuItem(
@@ -200,9 +202,7 @@ class DashboardState extends State<Dashboard> {
                   child: Text(value),
                 );
               }).toList(), 
-              //.toList() converts the mapped values into a list, which is what DropdownButton expects for items
 
-              //Triggered when the user selects a different item
               onChanged: (value) {
                 setState(() {
                   _sortOption = value!;
@@ -220,7 +220,7 @@ class DashboardState extends State<Dashboard> {
                   MaterialPageRoute(builder: (context) => AddApplicationScreen()),
 
                 //callback that runs after the user comes back from the AddApplicationScreen
-                //allows us to refresh the data to update the overview section
+                //To refresh the data to update the overview section
                 ).then((_) {          
                   if (mounted) {
                     _refreshData();

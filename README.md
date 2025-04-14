@@ -1,16 +1,12 @@
-# ojt_tracker
+# Internship Application Organizer
 
-A new Flutter project.
+An application designed to help students and job seekers efficiently manage their
+internship applications. The app provides an organized way to track applications, deadlines,
+statuses, and necessary documents, ensuring users stay on top of their job-seeking process.
 
-## Getting Started
+## Key Features:
+• Add internship application details 
+• Categorize applications by status (To Apply, Applied, Interview Scheduled, Accepted, Rejected)
+• Maintain notes on interviews and application progress.
+• Update or Delete application details
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

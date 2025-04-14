@@ -5,15 +5,15 @@ import '../utils/constants.dart';
 
 class ViewApplicationPage extends StatelessWidget {
   final Map<String, dynamic> application;
-  
+
   const ViewApplicationPage({super.key, required this.application});
 
   @override
   Widget build(BuildContext context) {
     final List<String> requirements = (application['requirements'] as String?)
-        ?.split(',')                    // Split by commas instead of newline
-        .map((r) => r.trim())           // Trim any extra spaces around each requirement
-        .where((r) => r.isNotEmpty)     // Filter out empty strings if any
+        ?.split(',') // Split by commas instead of newline
+        .map((r) => r.trim()) // Trim any extra spaces around each requirement
+        .where((r) => r.isNotEmpty) // Filter out empty strings if any
         .toList() ?? [];
 
     // Get the status color from the constants
@@ -93,9 +93,12 @@ class ViewApplicationPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Notes Section
-            Text('Notes',fontWeight: FontWeight.bold,),
+            Text(
+              'Notes',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-
             const SizedBox(height: 6),
             Card(
               elevation: 2,

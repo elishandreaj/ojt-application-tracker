@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/db_service.dart';
 import 'update_app.dart';
+import '../utils/constants.dart'; 
 
 class ViewApplicationPage extends StatelessWidget {
   final Map<String, dynamic> application;
 
-  // Mapping status to color
-  final Map<String, Color> statusColor = {
-    "To Apply": Colors.blue,
-    "Applied": Colors.purple,
-    "Interview": Colors.orange,
-    "Accepted": Colors.green,
-    "Rejected": Colors.red,
-  };
-
-  ViewApplicationPage({super.key, required this.application});
+  const ViewApplicationPage({super.key, required this.application});
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +16,9 @@ class ViewApplicationPage extends StatelessWidget {
         .where((r) => r.isNotEmpty) // Filter out empty strings if any
         .toList() ?? [];
 
-    // Get the status color based on the status
+    // Get the status color from the constants
     final String status = application['status'] ?? 'To Apply';
-    final statusBackgroundColor = statusColor[status] ?? Colors.blue;
+    final statusBackgroundColor = kStatusColors[status] ?? Colors.blue;
 
     return Scaffold(
       appBar: AppBar(
@@ -80,17 +72,17 @@ class ViewApplicationPage extends StatelessWidget {
             Text(
               'Requirements',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold, 
+                    fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 6),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: requirements.map((req) => Padding(
-                padding: const EdgeInsets.only(bottom: 4.0), 
+                padding: const EdgeInsets.only(bottom: 4.0),
                 child: Row(
                   children: [
-                    const Text("• ", style: TextStyle(fontSize: 16)), 
+                    const Text("• ", style: TextStyle(fontSize: 16)),
                     Expanded(
                       child: Text(req, style: const TextStyle(fontSize: 15)),
                     ),
@@ -101,11 +93,12 @@ class ViewApplicationPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Notes Section
-            Text('Notes', 
+            Text(
+              'Notes',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold, // Make it bold
-                    ),
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
             const SizedBox(height: 6),
             Card(
               elevation: 2,
@@ -115,7 +108,7 @@ class ViewApplicationPage extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: SingleChildScrollView(  
+                child: SingleChildScrollView(
                   child: Text(
                     application['notes'] ?? '-',
                     style: const TextStyle(fontSize: 15),
@@ -124,6 +117,7 @@ class ViewApplicationPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+
             // Edit and Delete Buttons
             Row(
               children: [
@@ -136,7 +130,7 @@ class ViewApplicationPage extends StatelessWidget {
                           builder: (context) => UpdateApplicationScreen(applicationId: application['id']),
                         ),
                       );
-                      if (context.mounted) { 
+                      if (context.mounted) {
                         Navigator.pop(context);
                       }
                     },
@@ -190,14 +184,13 @@ class ViewApplicationPage extends StatelessWidget {
                 ),
               ],
             ),
-
           ],
         ),
       ),
     );
   }
 
-    String _getDateLabel(String? status) {
+  String _getDateLabel(String? status) {
     switch (status) {
       case "To Apply":
         return "Application Deadline: ";
@@ -207,7 +200,6 @@ class ViewApplicationPage extends StatelessWidget {
         return "Date of Application: ";
     }
   }
-
 
   Widget _infoRow(String label, String? value) {
     return Padding(

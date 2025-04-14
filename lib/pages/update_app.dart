@@ -17,7 +17,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
 
   /// Controllers for form fields.
   late TextEditingController companyNameController;
-  late TextEditingController positionController;
+  late TextEditingController roleController;
   late TextEditingController locationController;
   late TextEditingController setupController;
   late TextEditingController statusController;
@@ -54,7 +54,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
 
       // Initialize controllers with the fetched data.
       companyNameController = TextEditingController(text: appData['company']);
-      positionController = TextEditingController(text: appData['role']);
+      roleController = TextEditingController(text: appData['role']);
       locationController = TextEditingController(text: appData['location']);
       setupController = TextEditingController(text: appData['setup']);
       statusController = TextEditingController(text: appData['status']);
@@ -74,7 +74,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
   /// Updates the application in the database with the modified data.
   void _updateApplication() async {
     if (_formKey.currentState!.validate()) {
-            List<String> updatedRequirements = requirementsControllers
+          List<String> updatedRequirements = requirementsControllers
           .where((controller) => controller.text.isNotEmpty)
           .map((controller) => controller.text)
           .toList();
@@ -82,7 +82,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
       // Prepare the updated data.
       Map<String, dynamic> updatedData = {
         'company': companyNameController.text,
-        'role': positionController.text,
+        'role': roleController.text,
         'location': locationController.text,
         'setup': setUp,
         'status': applicationStatus,
@@ -152,7 +152,7 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
   void dispose() {
     // Dispose all controllers to free up resources.
     companyNameController.dispose();
-    positionController.dispose();
+    roleController.dispose();
     locationController.dispose();
     setupController.dispose();
     statusController.dispose();
@@ -196,11 +196,11 @@ class UpdateApplicationScreenState extends State<UpdateApplicationScreen> {
 
               /// Position field.
               TextFormField(
-                controller: positionController,
-                decoration: const InputDecoration(labelText: 'Position'),
+                controller: roleController,
+                decoration: const InputDecoration(labelText: 'Role'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a position';
+                    return 'Please enter a role';
                   }
                   return null;
                 },

@@ -19,9 +19,9 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   final TextEditingController notesController = TextEditingController();
   List<TextEditingController> requirementsControllers = [];
 
-    final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
-    String setUp = 'On-site';
+  String setUp = 'On-site';
   String applicationStatus = 'To Apply';
 
   @override
@@ -64,7 +64,7 @@ class AddApplicationScreenState extends State<AddApplicationScreen> {
   Future<void> pickDate() async {
     DateTime now = DateTime.now();
 
-        DateTime firstDate;
+    DateTime firstDate;
     DateTime lastDate;
 
     if (['To Apply', 'Interview'].contains(applicationStatus)) {

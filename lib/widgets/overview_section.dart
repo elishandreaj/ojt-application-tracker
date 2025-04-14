@@ -24,16 +24,22 @@ class OverviewSection extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 10,                                            //horizontal spacing between boxes.
+          runSpacing: 10,                                         //vertical spacing between boxes
+          
+          ////Gets the corresponding color for the status tag.
           children: kApplicationStatuses.map((tag) {
-            final color = kStatusColors[tag] ?? Colors.grey;
+            final color = kStatusColors[tag] ?? Colors.grey;    
 
+            //builds a card-like container for each status.
             return Container(
+              //Calculates the width for each status box to be half of screen width minus spacing.
               width: (MediaQuery.of(context).size.width / 2) - 20 > 0
                   ? (MediaQuery.of(context).size.width / 2) - 20
                   : 0,
               height: 80,
+
+              //Add colored bar on the left to indicate status type
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(color: color, width: 4),
@@ -42,6 +48,8 @@ class OverviewSection extends StatelessWidget {
                 boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 4.0)],
                 borderRadius: BorderRadius.circular(10),
               ),
+              
+              //Vertically stacks the count and label inside the box.
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -53,7 +61,7 @@ class OverviewSection extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }).toList(),    //Converts the results of .map() into a List<Widget> which is required by Wrap.
         ),
         const SizedBox(height: 20),
       ],

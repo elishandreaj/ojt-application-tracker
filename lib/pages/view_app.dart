@@ -103,7 +103,7 @@ class ViewApplicationPage extends StatelessWidget {
             // Notes Section
             Text('Notes', 
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold, // Make it bold
+                      fontWeight: FontWeight.bold, 
                     ),
               ),
             const SizedBox(height: 6),
